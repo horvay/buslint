@@ -17,6 +17,7 @@ from waflib import Task, Logs, Utils, Errors
 from waflib.Context import BOTH
 import time
 import tempfile
+import os
 
 @feature('buslint')
 @after_method('process_source')
@@ -56,12 +57,12 @@ class buslint(Task.Task):
         f.write(args)
         f.close()
 
-        print("Buslint wrote to temp file: " + str(f.name))
-
         start_time = time.time()
         success = self.exec_buslint(f.name)
         elapsed_time = time.time() - start_time
         print("Buslint took " + str(elapsed_time) + "s to run! ")
+
+        os.unlink(f.name)
 
         return 0 if success else 1
 
