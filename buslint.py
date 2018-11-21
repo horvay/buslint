@@ -32,7 +32,7 @@ def create_buslint_tasks(self):
     componentHeaders = [s for s in self.header_files if "Component.h" in str(s)]
     
     binary = self.bld.path.abspath() + "\\buslint.exe"
-    inputs = self.to_nodes(componentHeaders)
+    inputs = self.to_nodes(self.source) + self.to_nodes(self.header_files)
 
     task = self.create_task('buslint', inputs)
     task.prepare(binary=binary, input_paths=' '.join(x.abspath() for x in componentHeaders))
@@ -53,8 +53,7 @@ class buslint(Task.Task):
         start_time = time.time()
         success = self.exec_buslint(args)
         elapsed_time = time.time() - start_time
-
-        print("Buslint took " + str(elapsed_time) + "s to run!")
+        print("Buslint took " + str(elapsed_time) + "s to run! ")
 
         return 0 if success else 1
 
@@ -75,5 +74,5 @@ class buslint(Task.Task):
             Logs.error('buslint: buslint execution failed! Output:\n{}'.format(e.stderr))
             return False # do not fail the build, this is a warning
 
-        return output
+        return True
         

@@ -27,7 +27,7 @@ public:
             std::ifstream header( m_header );
             definition = std::string( ( std::istreambuf_iterator<char>( header ) ), std::istreambuf_iterator<char>() );
         }
-        const std::regex e( "[A-z]*Bus::Handler" );
+        const std::regex e( "[A-z]*Bus::Handler(?!.*\\/\\/.?nolint)" );
 
         std::sregex_iterator next( definition.begin(), definition.end(), e );
         const std::sregex_iterator end;
@@ -47,7 +47,7 @@ public:
         impl += definition;
         for ( const auto& bus : buses )
         {
-            if ( !std::regex_search( impl, std::regex( bus + "::BusConnect" ) ) )
+            if ( impl.find( bus + "::BusConnect" ) == std::string::npos )
             {
                 return{ false, "Aw snap dawg!, you forgot to connect the bus " + bus + " in " + m_source };
             }
