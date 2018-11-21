@@ -99,17 +99,16 @@ int main( int argc, char** argv )
         return 0;
     }
 
-    using namespace std;
     // read contents of files to parse from the file
-    ifstream t(argv[1]);
-    string str((istreambuf_iterator<char>(t)), istreambuf_iterator<char>());
+    std::ifstream t( argv[1] );
+    const std::string str( ( std::istreambuf_iterator<char>( t ) ), std::istreambuf_iterator<char>() );
 
-    istringstream ss(str);
+    std::istringstream ss( str );
 
     std::vector<std::string> components{};
 
-    string one_line;
-    while (getline(ss, one_line, ' '))
+    std::string one_line;
+    while ( getline( ss, one_line, ' ' ) )
     {
         components.emplace_back( one_line );
     }
