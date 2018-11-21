@@ -7,6 +7,7 @@
 #include <tuple>
 #include <regex>
 #include <fstream>
+#include <sstream>
 
 
 class Components
@@ -98,10 +99,19 @@ int main( int argc, char** argv )
         return 0;
     }
 
+    using namespace std;
+    // read contents of files to parse from the file
+    ifstream t(argv[1]);
+    string str((istreambuf_iterator<char>(t)), istreambuf_iterator<char>());
+
+    istringstream ss(str);
+
     std::vector<std::string> components{};
-    for ( int i = 1; i < argc; i++ )
+
+    string one_line;
+    while (getline(ss, one_line, ' '))
     {
-        components.emplace_back( argv[i] );
+        components.emplace_back( one_line );
     }
 
     App app( components );

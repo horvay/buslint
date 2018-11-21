@@ -16,6 +16,7 @@ from waflib.TaskGen import feature, after_method, before_method
 from waflib import Task, Logs, Utils, Errors
 from waflib.Context import BOTH
 import time
+import tempfile
 
 @feature('buslint')
 @after_method('process_source')
@@ -30,7 +31,7 @@ def create_buslint_tasks(self):
         return
 
     componentHeaders = [s for s in self.header_files if "Component.h" in str(s)]
-    
+
     binary = self.bld.path.abspath() + "\\buslint.exe"
     inputs = self.to_nodes(self.source) + self.to_nodes(self.header_files)
 
@@ -49,9 +50,16 @@ class buslint(Task.Task):
 
     def run(self):
         args = self.input_paths
-        
+
+        # args might be more than 32k characters long, so let's write to a file and pass it to buslist
+        f = tempfile.NamedTemporaryFile(delete=False)
+        f.write(args)
+        f.close()
+
+        print("Buslint wrote to temp file: " + str(f.name))
+
         start_time = time.time()
-        success = self.exec_buslint(args)
+        success = self.exec_buslint(f.name)
         elapsed_time = time.time() - start_time
         print("Buslint took " + str(elapsed_time) + "s to run! ")
 
@@ -75,4 +83,3 @@ class buslint(Task.Task):
             return False # do not fail the build, this is a warning
 
         return True
-        
