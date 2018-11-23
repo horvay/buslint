@@ -28,14 +28,23 @@ public:
             std::ifstream header( m_header );
             definition = std::string( ( std::istreambuf_iterator<char>( header ) ), std::istreambuf_iterator<char>() );
         }
-        const std::regex e( "[A-z]*Bus::Handler(?!.*\\/\\/.?nolint)" );
 
-        std::sregex_iterator next( definition.begin(), definition.end(), e );
+        // this regex will get the entire line with the bus connect, but not including //nolint and lines that start with //
+        const std::regex bus_lines_reg( R"(^(?!\s*((\/\/)|(\*))).*[A-z,0-9,_]*(Bus::Handler)\s*?(?!.*\/\/.?nolint))" );
+        // this extracts out the name and handler for the bus from the bus line above ex: YourMotherBus::Handler
+        const std::regex bus_reg( "[A-z,0-9,_]*Bus::Handler" );
+
+        std::sregex_iterator next( definition.begin(), definition.end(), bus_lines_reg );
         const std::sregex_iterator end;
         while ( next != end )
         {
             std::smatch sm = *next;
-            buses.push_back( sm.str() );
+
+            const auto bus_line = sm.str();
+            std::smatch bus_match;
+            if ( std::regex_search( bus_line, bus_match, bus_reg ) )
+                buses.push_back( bus_match[0] );
+
             ++next;
         }
 
@@ -46,15 +55,18 @@ public:
         }
 
         impl += definition;
+        std::string problems;
+        bool is_valid = true;
         for ( const auto& bus : buses )
         {
             if ( impl.find( bus + "::BusConnect" ) == std::string::npos )
             {
-                return{ false, "Aw snap dawg!, you forgot to connect the bus " + bus + " in " + m_source };
+                problems += "Aw snap dawg!, you forgot to connect the bus " + bus + " in " + m_source + "\n";
+                is_valid = false;
             }
         }
 
-        return{ true, "" };
+        return{ is_valid, problems };
     }
 
 private:
@@ -75,16 +87,20 @@ public:
 
     bool Validate()
     {
+        bool overall = true;
+        std::string problems;
         for ( auto& comp : m_components )
         {
             auto result = comp.Validate();
             if ( !std::get<0>( result ) )
             {
-                std::cerr << std::get<1>( result ) << std::endl;
-                return false;
+                overall = false;
+                problems += std::get<1>( result );
             }
         }
-        return true;
+
+        if ( !overall ) std::cerr << problems << std::endl;
+        return overall;
     }
 
 private:
