@@ -1,5 +1,5 @@
 # buslint
-A linter for Amazon's Lumberyard to catch common mistakes when using buses.
+A linter for Amazon's Lumberyard to catch common mistakes when using buses. Right now it reports when you forgot to connect a bus when handling it.
 
 First, lets see it in action!
 ![snip snip](example.gif)
