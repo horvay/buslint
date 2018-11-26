@@ -4,3 +4,4 @@ Release
 buslint.VC.db
 buslint.VC.VC.opendb
 buslint.vcxproj.user
+boost/*

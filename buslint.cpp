@@ -8,7 +8,8 @@
 #include <regex>
 #include <fstream>
 #include <sstream>
-
+#include <boost/xpressive/xpressive_dynamic.hpp>
+#include <boost/xpressive/xpressive_static.hpp>
 
 class Components
 {
@@ -26,26 +27,31 @@ public:
         std::string definition;
         {
             std::ifstream header( m_header );
-            definition = std::string( ( std::istreambuf_iterator<char>( header ) ), std::istreambuf_iterator<char>() );
+            definition = std::string( std::istreambuf_iterator<char>( header ), std::istreambuf_iterator<char>() );
         }
 
-        // this regex will get the entire line with the bus connect, but not including //nolint and lines that start with //
-        const std::regex bus_lines_reg( R"(^(?!\s*((\/\/)|(\*))).*[A-z,0-9,_]*(Bus::Handler)\s*?(?!.*\/\/.?nolint))" );
-        // this extracts out the name and handler for the bus from the bus line above ex: YourMotherBus::Handler
-        const std::regex bus_reg( "[A-z,0-9,_]*Bus::Handler" );
+        using namespace boost::xpressive;
+        // this gets the entire bus line of code, ex, private MannequinAssetNotificationBus::Handler
+        const sregex bus_lines_re = sregex::compile( R"(^(?!\s*(\/|\*).*).+(Bus::Handler|Bus::MultiHandler)(?!.*\/\/.?nolint).*$)", regex_constants::not_dot_newline | regex_constants::optimize );
 
-        std::sregex_iterator next( definition.begin(), definition.end(), bus_lines_reg );
-        const std::sregex_iterator end;
-        while ( next != end )
+        std::vector<std::string> bus_lines{};
+        sregex_iterator cur( definition.begin(), definition.end(), bus_lines_re );
+        const sregex_iterator end;
+
+        for ( ; cur != end; ++cur )
         {
-            std::smatch sm = *next;
+            const auto &bus_line_of_code = *cur;
+            bus_lines.emplace_back( bus_line_of_code[0] );
+        }
 
-            const auto bus_line = sm.str();
-            std::smatch bus_match;
-            if ( std::regex_search( bus_line, bus_match, bus_reg ) )
-                buses.push_back( bus_match[0] );
+        // this gets the actual bus only, ex, MannequinAssetNotificationBus::Handler
+        const sregex bus_name_re = +alnum >> "Bus::Handler" | "Bus::MultiHandler";
 
-            ++next;
+        for ( auto& line : bus_lines )
+        {
+            smatch bus_name_match;
+            regex_search( line, bus_name_match, bus_name_re );
+            buses.emplace_back( bus_name_match[0] );
         }
 
         std::string impl;
@@ -54,12 +60,11 @@ public:
             impl = std::string( ( std::istreambuf_iterator<char>( source ) ), std::istreambuf_iterator<char>() );
         }
 
-        impl += definition;
         std::string problems;
         bool is_valid = true;
         for ( const auto& bus : buses )
         {
-            if ( impl.find( bus + "::BusConnect" ) == std::string::npos )
+            if ( impl.find( bus + "::BusConnect" ) == std::string::npos && definition.find( bus + "::BusConnect" ) == std::string::npos )
             {
                 problems += "Aw snap dawg!, you forgot to connect the bus " + bus + " in " + m_source + "\n";
                 is_valid = false;
