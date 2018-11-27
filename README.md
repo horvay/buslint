@@ -57,3 +57,20 @@ class LevelStateComponent
     , protected UR3_Base::ResourceRequestBus::Handler // nolint
 ```
 The spacing around the `//` is optional.
+
+## I love buslint and wish to enable it for ALL GEMS!!!
+
+Since WAF is awesome, here you go:
+
+dev\Tools\build\waf-1.7.13\lmbrwaflib\gems.py
+
+Find 'features' under default_settings:
+```        # Set default properties
+        default_settings = {
+...
+            'features': ['buslint'],
+...
+        }
+```
+
+Enjoy naggy buslint everywhere!
