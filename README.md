@@ -70,6 +70,7 @@ Find 'features' under default_settings:
 ...
             'features': ['buslint'],
 ...
-        }```
+        }
+```
 
 Enjoy naggy buslint everywhere!
