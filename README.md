@@ -16,7 +16,7 @@ Click the releases link above (or just click [here](https://github.com/horvay/bu
 
 Drop the `buslint.exe` into your `dev` folder, and drop the `buslint.py` into the `dev\Tools\build\waf-1.7.13\lmbrwaflib` folder. Note the version of waf may change in the future.
 
-Now the hardest part. You need to open `dev\Tools\build\waf-1.7.13\lmbrwaflib\lumberyard.py` and add buslint the line `LMBR_WAFLIB_MODULES` array, currently around line `140`
+Now the hardest part. You need to open `dev\Tools\build\waf-1.7.13\lmbrwaflib\lumberyard.py` and add buslint to the `LMBR_WAFLIB_MODULES` array, currently around line `140`
 lumberyard.py
 ```python
         'lmbr_setup_tools',
