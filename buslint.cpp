@@ -66,7 +66,9 @@ public:
         {
             if ( impl.find( bus + "::BusConnect" ) == std::string::npos && definition.find( bus + "::BusConnect" ) == std::string::npos )
             {
-                problems += "Aw snap dawg!, you forgot to connect the bus " + bus + " in " + m_source + "\n";
+                auto beginning_to_bus = definition.substr( 0, definition.find( bus ) );
+                int lines = std::count_if( beginning_to_bus.begin(), beginning_to_bus.end(), []( auto c ) { return c == '\n'; } );
+                problems += m_header + "(" + std::to_string( lines + 1 ) + "): error: " + bus + " not connected.\n";
                 is_valid = false;
             }
         }
@@ -104,7 +106,11 @@ public:
             }
         }
 
-        if ( !overall ) std::cerr << problems << std::endl;
+        if ( !overall )
+        {
+            problems = "Aw snap dawg!, you forgot to connect a bus! \n" + problems;
+            std::cerr << problems << std::endl;
+        }
         return overall;
     }
 
